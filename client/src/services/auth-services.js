@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/user";
+// ⭐ 改成 Render 後端的 API 路徑
+const API_URL = "https://concert-ipok.onrender.com/api/user";
 
 class AuthService {
   register(username, email, password) {
@@ -28,3 +29,4 @@ class AuthService {
 }
 
 export default new AuthService();
+
