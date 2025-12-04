@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/seats";
+// ⭐ 改成 Render 後端的座位 API
+const API_URL = "https://concert-ipok.onrender.com/api/seats";
 
 // 取得全部座位清單
 const getSeats = () => {
