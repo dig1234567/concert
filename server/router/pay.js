@@ -5,25 +5,27 @@ const CryptoJS = require("crypto-js");
 const MerchantID = "2000132";
 const HashKey = "5294y06JbISpM5x9";
 const HashIV = "v77hoKGq4kWxNNIS";
-
 const paymentURL = "https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5";
+
+// ⚡ 外網可訪問的測試 URL (ngrok 或正式網址)
+const SERVER_PUBLIC_URL =
+  process.env.SERVER_PUBLIC_URL || "https://abcd1234.ngrok.io";
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
 
 // 產生隨機訂單編號
 function genTradeNo() {
   return "TS" + Date.now();
 }
 
-// ⭐ 綠界規定的時間格式 yyyy/MM/dd HH:mm:ss
+// 綠界規定的時間格式 yyyy/MM/dd HH:mm:ss
 function formatDate() {
   const dt = new Date();
-
   const yyyy = dt.getFullYear();
   const MM = String(dt.getMonth() + 1).padStart(2, "0");
   const dd = String(dt.getDate()).padStart(2, "0");
   const hh = String(dt.getHours()).padStart(2, "0");
   const mm = String(dt.getMinutes()).padStart(2, "0");
   const ss = String(dt.getSeconds()).padStart(2, "0");
-
   return `${yyyy}/${MM}/${dd} ${hh}:${mm}:${ss}`;
 }
 
@@ -49,13 +51,13 @@ function generateCheckMacValue(params) {
 }
 
 // ---------------------------
-// 🔥 API：產生綠界訂單
+// 🔥 產生綠界訂單
 // ---------------------------
 router.post("/checkout", (req, res) => {
   const { totalAmount, selectedSeats } = req.body;
 
-  if (!totalAmount || !selectedSeats) {
-    return res.status(400).json({ message: "資料缺失" });
+  if (!totalAmount || !selectedSeats || selectedSeats.length === 0) {
+    return res.status(400).json({ message: "資料缺失或座位未選擇" });
   }
 
   const TradeNo = genTradeNo();
@@ -69,9 +71,9 @@ router.post("/checkout", (req, res) => {
     TradeDesc: "演唱會門票",
     ItemName: selectedSeats.join("#"),
 
-    // ⭐⭐ 這非常重要 — 你 Render 上的 domain
-    ReturnURL: `${process.env.SERVER_URL}/api/pay/return`, 
-    NotifyURL: `${process.env.SERVER_URL}/api/pay/notify`,
+    // ⭐ 使用外網可訪問的 NotifyURL / ReturnURL
+    ReturnURL: `${SERVER_PUBLIC_URL}/api/pay/return`,
+    NotifyURL: `${SERVER_PUBLIC_URL}/api/pay/notify`,
 
     ChoosePayment: "Credit",
     EncryptType: 1,
@@ -91,8 +93,8 @@ router.post("/checkout", (req, res) => {
 router.post("/notify", (req, res) => {
   console.log("📌 綁定付款成功 Notify：", req.body);
 
-  // 你可以在這邊寫 DB 更新，例如寫入訂單狀態
-  // TODO：updateOrderStatus(req.body.MerchantTradeNo, "paid")
+  // TODO: 更新資料庫訂單狀態
+  // updateOrderStatus(req.body.MerchantTradeNo, "paid");
 
   // ⭐ 綠界要求固定回傳 1|OK
   res.send("1|OK");
@@ -104,8 +106,8 @@ router.post("/notify", (req, res) => {
 router.post("/return", (req, res) => {
   console.log("📌 ReturnURL 回傳：", req.body);
 
-  // 導回你前端成功頁
-  res.redirect(`${process.env.CLIENT_URL}/success`);
+  // 導回前端成功頁
+  res.redirect(`${CLIENT_URL}/success`);
 });
 
 module.exports = router;
