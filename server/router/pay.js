@@ -1,24 +1,19 @@
 const router = require("express").Router();
 const CryptoJS = require("crypto-js");
 
-// 🔥 綠界測試環境商店資訊（不會扣款）
+// ----------- 綠界測試環境 -----------
 const MerchantID = "2000132";
 const HashKey = "5294y06JbISpM5x9";
 const HashIV = "v77hoKGq4kWxNNIS";
 
-// 🔥 綠界測試付款網址（表單要 POST 到這）
 const paymentURL = "https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5";
 
-// ======================================================
-// 產生亂數訂單編號
-// ======================================================
+// 產生隨機訂單編號
 function genTradeNo() {
   return "TS" + Date.now();
 }
 
-// ======================================================
 // ⭐ 綠界規定的時間格式 yyyy/MM/dd HH:mm:ss
-// ======================================================
 function formatDate() {
   const dt = new Date();
 
@@ -32,9 +27,7 @@ function formatDate() {
   return `${yyyy}/${MM}/${dd} ${hh}:${mm}:${ss}`;
 }
 
-// ======================================================
-// SHA256 CheckMacValue（綠界規定寫法）
-// ======================================================
+// 產生 CheckMacValue
 function generateCheckMacValue(params) {
   let raw = `HashKey=${HashKey}`;
   Object.keys(params)
@@ -52,13 +45,12 @@ function generateCheckMacValue(params) {
     .replace(/%29/g, ")")
     .replace(/%2a/g, "*");
 
-  const hash = CryptoJS.SHA256(encoded).toString().toUpperCase();
-  return hash;
+  return CryptoJS.SHA256(encoded).toString().toUpperCase();
 }
 
-// ======================================================
-// 🔥 API：產生綠界訂單（前端會拿到 infos 並 POST form）
-// ======================================================
+// ---------------------------
+// 🔥 API：產生綠界訂單
+// ---------------------------
 router.post("/checkout", (req, res) => {
   const { totalAmount, selectedSeats } = req.body;
 
@@ -77,27 +69,43 @@ router.post("/checkout", (req, res) => {
     TradeDesc: "演唱會門票",
     ItemName: selectedSeats.join("#"),
 
-    // ======================================================
-    // ⭐ Render 上請換成你的 domain，比如：
-    // https://concert-ipok.onrender.com/api/pay/notify
-    // ======================================================
-    ReturnURL: `${process.env.SERVER_URL}/api/pay/return`,
+    // ⭐⭐ 這非常重要 — 你 Render 上的 domain
+    ReturnURL: `${process.env.SERVER_URL}/api/pay/return`, 
     NotifyURL: `${process.env.SERVER_URL}/api/pay/notify`,
 
     ChoosePayment: "Credit",
     EncryptType: 1,
   };
 
-  // 加上 CheckMacValue
   const CheckMacValue = generateCheckMacValue(params);
 
-  // 回傳給前端（前端會自動 POST form）
   res.json({
     paymentURL,
     params: { ...params, CheckMacValue },
   });
 });
 
-// ======================================================
-//
+// ---------------------------
+// 🔥 綠界伺服器背景通知（NotifyURL）
+// ---------------------------
+router.post("/notify", (req, res) => {
+  console.log("📌 綁定付款成功 Notify：", req.body);
 
+  // 你可以在這邊寫 DB 更新，例如寫入訂單狀態
+  // TODO：updateOrderStatus(req.body.MerchantTradeNo, "paid")
+
+  // ⭐ 綠界要求固定回傳 1|OK
+  res.send("1|OK");
+});
+
+// ---------------------------
+// 🔥 前端導回頁面（ReturnURL）
+// ---------------------------
+router.post("/return", (req, res) => {
+  console.log("📌 ReturnURL 回傳：", req.body);
+
+  // 導回你前端成功頁
+  res.redirect(`${process.env.CLIENT_URL}/success`);
+});
+
+module.exports = router;
