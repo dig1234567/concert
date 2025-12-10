@@ -80,6 +80,7 @@ router.post("/checkout", (req, res) => {
   };
 
   const CheckMacValue = generateCheckMacValue(params);
+  console.log("NotifyURL =", `${SERVER_PUBLIC_URL}/api/pay/notify`);
 
   res.json({
     paymentURL,
