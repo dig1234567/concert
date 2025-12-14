@@ -71,9 +71,10 @@ router.post("/checkout", (req, res) => {
     TradeDesc: "演唱會門票",
     ItemName: selectedSeats.join("#"),
 
-    // ⭐ 使用外網可訪問的 NotifyURL / ReturnURL
+    // ⭐ 使用外網可訪問的 PaymentInfoURL/ ReturnURL
     ReturnURL: `${SERVER_PUBLIC_URL}/api/pay/return`,
-    NotifyURL: `${SERVER_PUBLIC_URL}/api/pay/notify`,
+    PaymentInfoURL: `${SERVER_PUBLIC_URL}/api/pay/notify`,
+
 
     ChoosePayment: "Credit",
     EncryptType: 1,
