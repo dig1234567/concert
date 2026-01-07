@@ -16,7 +16,7 @@ const HomeComponent = ({ currentUser, setCurrentUser }) => {
     <div>
       <main className="main">
         <div className="main-content1">
-          <h1>五月天演唱會</h1>
+          <h1 style={{ fontSize: "40px" }}>五月天演唱會</h1>
           <img src={img2} alt="" />
           <h2 className="text-content">近期演出</h2>
           <p className="text-content2">
@@ -28,7 +28,7 @@ const HomeComponent = ({ currentUser, setCurrentUser }) => {
           </button>
         </div>
         <div className="main-content2">
-          <h1>周杰倫演唱會</h1>
+          <h1 style={{ fontSize: "40px" }}>周杰倫演唱會</h1>
           <img src={img1} alt="" />
           <h2 className="text-content">近期演出</h2>
           <p className="text-content2">
