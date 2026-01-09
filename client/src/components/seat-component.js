@@ -8,7 +8,14 @@ const SeatComponent = ({ currentUser, setCurrentUser }) => {
   const navigate = useNavigate();
   const [seats, setSeats] = useState([]);
   const [selectedSeats, setSelectedSeats] = useState([]);
-  const ticketPrice = 2000; // 單張票價，可自由修改
+
+  //門票價錢
+  const seatPriceMap = {
+    A: 3800,
+    B: 2800,
+    C: 1800,
+    D: 1200,
+  };
 
   // 取得所有座位
   useEffect(() => {
@@ -16,6 +23,15 @@ const SeatComponent = ({ currentUser, setCurrentUser }) => {
       setSeats(res.data);
     });
   }, []);
+
+  const getSeatArea = (seatCode) => {
+    return seatCode.split("-")[0];
+  };
+
+  const totalAmount = selectedSeats.reduce((sum, seatCode) => {
+    const area = getSeatArea(seatCode);
+    return sum + seatPriceMap[area];
+  }, 0);
 
   // 點選座位
   const toggleSeat = (seatCode) => {
@@ -51,13 +67,16 @@ const SeatComponent = ({ currentUser, setCurrentUser }) => {
       // 建立 orderId（如果後端沒有）
       const orderId = res.data.orderId || "ORDER_" + Date.now();
 
-      const amount = bookedSeats.length * ticketPrice;
+      const amount = bookedSeats.reduce((sum, seatCode) => {
+        const area = getSeatArea(seatCode);
+        return sum + seatPriceMap[area];
+      }, 0);
 
       // ⭐ 導向付款頁並傳資料過去
       navigate("/pay", {
         state: {
-          selectedSeats,
-          totalAmount: selectedSeats.length * 2000, // 或你後端回傳的總金額
+          selectedSeats: bookedSeats,
+          totalAmount: amount,
         },
       });
     } catch (err) {
@@ -149,7 +168,7 @@ const SeatComponent = ({ currentUser, setCurrentUser }) => {
         <p style={{ marginTop: "10px" }}>
           已選：{selectedSeats.join(", ") || "尚未選擇"}
         </p>
-        <p>金額：{selectedSeats.length * ticketPrice} 元</p>
+        <p>金額：{totalAmount} 元</p>
 
         {/* 送出訂票 */}
         <button
