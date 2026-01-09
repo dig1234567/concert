@@ -8,11 +8,7 @@ const PayComponent = ({ currentUser, setCurrentUser }) => {
   const navigate = useNavigate();
 
   // 接著從SeatComponent 傳來的座位資料
-  const selectedSeats = location.state?.selectedSeats || [];
-
-  // 假設每張票 2000 元
-  const pricePerSeat = 2000;
-  const totalAmount = selectedSeats.length * pricePerSeat;
+  const { selectedSeats = [], totalAmount = 0 } = location.state || {};
   const handleLogin = () => {
     window.alert("正在導向至登入頁面");
     navigate("/login");
@@ -97,3 +93,4 @@ const PayComponent = ({ currentUser, setCurrentUser }) => {
 };
 
 export default PayComponent;
+
